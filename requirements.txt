@@ -1,0 +1,13 @@
+flask
+pandas
+numpy
+alpaca-py
+python-dotenv
+requests
+eventlet
+flask-socketio
+websocket-client
+pytest-asyncio
+alpaca-trade-api
+certifi
+pytz
