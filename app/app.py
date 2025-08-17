@@ -1,14 +1,22 @@
 import os
 import json
+import pytz
 import certifi
-import threading
 import websocket
+import threading
+import yfinance as yf
+from dotenv import load_dotenv
+import alpaca_trade_api as tradeapi
 from flask import Flask, render_template
 from flask_socketio import SocketIO
-from dotenv import load_dotenv
 from datetime import datetime, UTC, timedelta
-import alpaca_trade_api as tradeapi
-import pytz
+from alpaca.trading.client import TradingClient
+from alpaca.data import StockHistoricalDataClient
+from alpaca.trading.requests import GetAssetsRequest
+from alpaca.trading.enums import AssetClass, AssetStatus
+from flask import Flask, render_template, request, jsonify
+from alpaca.data.requests import StockLatestQuoteRequest, StockLatestTradeRequest
+
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +25,15 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(24).hex()
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading', engineio_logger=True)
+
+# Initialize Alpaca client (use your env vars)
+trading_client = TradingClient(
+    os.environ['APCA_API_KEY_ID'], os.environ['APCA_API_SECRET_KEY'])
+
+# Fetch all active US equity assets once on startup
+assets_request = GetAssetsRequest(
+    asset_class=AssetClass.US_EQUITY, status=AssetStatus.ACTIVE)
+all_assets = trading_client.get_all_assets(assets_request)
 
 # Debug template path
 print(f"Template folder: {app.template_folder}")
@@ -55,6 +72,9 @@ ws_connected = False
 # Cache for latest stock data (symbol -> data)
 latest_stock_data = {}
 stock_data_lock = threading.Lock()
+
+data_client = StockHistoricalDataClient(
+    os.environ['APCA_API_KEY_ID'], os.environ['APCA_API_SECRET_KEY'])
 
 def fetch_latest_quote(symbol):
     """
@@ -325,6 +345,99 @@ def index():
     """Render the main application page."""
     print(f"Rendering index.html at {datetime.now(UTC).isoformat()}")
     return render_template('index.html')
+
+# Route for the all-stocks page (renders the table)
+
+
+@app.route('/all_stocks')
+def all_stocks():
+    return render_template('all_stocks.html')
+
+# API endpoint for DataTables server-side processing
+
+
+@app.route('/api/assets')
+def api_assets():
+    draw = int(request.args.get('draw', 1))
+    start = int(request.args.get('start', 0))
+    length = int(request.args.get('length', 100))  # Default to 100 per page
+    search_value = request.args.get('search[value]', '').lower()
+    # 0: symbol, 1: name, etc.
+    order_column = int(request.args.get('order[0][column]', 0))
+    order_dir = request.args.get('order[0][dir]', 'asc')
+
+    # Filter assets by search (on symbol or name)
+    filtered_assets = [
+        asset for asset in all_assets
+        if search_value in asset.symbol.lower() or search_value in asset.name.lower()
+    ]
+
+    # Sort filtered list
+    # Adjust based on your table columns
+    column_map = {0: 'symbol', 1: 'name', 2: 'exchange'}
+    sort_key = column_map.get(order_column, 'symbol')
+    filtered_assets.sort(key=lambda a: getattr(
+        a, sort_key).lower(), reverse=(order_dir == 'desc'))
+
+    # Paginate
+    paginated_assets = filtered_assets[start:start + length]
+
+    # Prepare data for DataTables (list of dicts or lists; here, lists for simplicity)
+    data = []
+    for asset in paginated_assets:
+        data.append([
+            # Clickable symbol
+            f'<a href="/stock/{asset.symbol}">{asset.symbol}</a>',
+            asset.name,
+            asset.exchange
+        ])
+
+    return jsonify({
+        'draw': draw,
+        'recordsTotal': len(all_assets),
+        'recordsFiltered': len(filtered_assets),
+        'data': data
+    })
+
+# Dynamic route for stock details
+
+
+@app.route('/stock/<symbol>')
+def stock_details(symbol):
+    try:
+        # Fetch from yFinance (primary source for details)
+        ticker = yf.Ticker(symbol)
+        # Dict with name, currentPrice, marketCap, peRatio, etc.
+        yf_info = ticker.info
+
+        # Fetch from Alpaca to supplement (asset details, latest quote, latest trade)
+        asset = trading_client.get_asset(symbol)
+        quote_request = StockLatestQuoteRequest(symbol_or_symbols=symbol)
+        latest_quote = data_client.get_stock_latest_quote(
+            quote_request)  # Returns {symbol: Quote}
+        trade_request = StockLatestTradeRequest(symbol_or_symbols=symbol)
+        latest_trade = data_client.get_stock_latest_trade(
+            trade_request)  # Optional, for latest trade details
+
+        # Combine data: Use yF for most, Alpaca for real-time quote/trade if yF missing
+        combined_data = {
+            'symbol': yf_info.get('symbol', asset.symbol),
+            'name': yf_info.get('longName', asset.name),
+            'exchange': yf_info.get('exchange', asset.exchange),
+            # Fallback to Alpaca ask
+            'current_price': yf_info.get('currentPrice', latest_quote[symbol].ask_price),
+            'bid_price': latest_quote[symbol].bid_price,
+            'ask_price': latest_quote[symbol].ask_price,
+            'market_cap': yf_info.get('marketCap'),
+            'pe_ratio': yf_info.get('trailingPE'),
+            'volume': yf_info.get('volume'),
+            'latest_trade_price': latest_trade[symbol].price if latest_trade else None,
+            # Add more as needed, e.g., 'status': asset.status
+        }
+
+        return render_template('stock_details.html', data=combined_data)
+    except Exception as e:
+        return f"Error fetching details for {symbol}: {str(e)}", 500
 
 @socketio.on('connect', namespace='/ws/watchlist')
 def handle_connect():
