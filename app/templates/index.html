@@ -3,6 +3,9 @@
 <html>
 <head>
     <title>Neon Ticker</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.min.js"></script>
     <style>
         /* Dark Neon Theme */
@@ -435,6 +438,23 @@
             </div>
         </div>
     </div>
+
+    <section id="all-stocks-section">
+        <h2>All Tradable Stocks</h2>
+        <table id="stocksTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Exchange</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data loaded via AJAX -->
+            </tbody>
+        </table>
+        <button onclick="window.location.href='/all_stocks'">View Full Page List</button>
+    </section>
     
     <script>
         console.log('Starting SocketIO connection...');
@@ -704,6 +724,20 @@
                 showError('Connection timeout - check your connection');
             }
         }, 10000);
+
+        $(document).ready(function () {
+            $('#stocksTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": "/api/assets",
+                "pageLength": 100,
+                "columns": [
+                    { "data": 0 },  // Symbol (clickable)
+                    { "data": 1 },  // Name
+                    { "data": 2 }   // Exchange
+                ]
+            });
+        });
     </script>
 </body>
 </html>

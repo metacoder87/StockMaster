@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>All Stocks</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+</head>
+
+<body>
+    <h1>All Tradable Stocks</h1>
+    <table id="stocksTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Exchange</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded via AJAX -->
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function () {
+            $('#stocksTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": "/api/assets",  // Your backend API endpoint
+                "pageLength": 100,  // 100 per page
+                "columns": [
+                    { "data": 0 },  // Symbol (clickable)
+                    { "data": 1 },  // Name
+                    { "data": 2 }   // Exchange
+                ]
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Details: {{ data.symbol }}</title>
+</head>
+
+<body>
+    <h1>{{ data.symbol }} - {{ data.name }}</h1>
+    <table>
+        <tr>
+            <td>Exchange:</td>
+            <td>{{ data.exchange }}</td>
+        </tr>
+        <tr>
+            <td>Current Price:</td>
+            <td>{{ data.current_price }}</td>
+        </tr>
+        <tr>
+            <td>Bid Price:</td>
+            <td>{{ data.bid_price }}</td>
+        </tr>
+        <tr>
+            <td>Ask Price:</td>
+            <td>{{ data.ask_price }}</td>
+        </tr>
+        <tr>
+            <td>Market Cap:</td>
+            <td>{{ data.market_cap }}</td>
+        </tr>
+        <tr>
+            <td>P/E Ratio:</td>
+            <td>{{ data.pe_ratio }}</td>
+        </tr>
+        <tr>
+            <td>Volume:</td>
+            <td>{{ data.volume }}</td>
+        </tr>
+        <tr>
+            <td>Latest Trade Price:</td>
+            <td>{{ data.latest_trade_price }}</td>
+        </tr>
+        <!-- Add more rows for other data -->
+    </table>
+    <a href="/all_stocks">Back to List</a> | <a href="/">Back to Homepage</a>
+</body>
+
+</html>

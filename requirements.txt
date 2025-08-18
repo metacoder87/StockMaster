@@ -10,4 +10,5 @@ websocket-client
 pytest-asyncio
 alpaca-trade-api
 certifi
+yfinance
 pytz
