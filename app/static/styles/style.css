@@ -1,0 +1,393 @@
+/* Dark Neon Theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #0a0a0a;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-image:
+        radial-gradient(ellipse at top, #1a0033 0%, transparent 50%),
+        radial-gradient(ellipse at bottom, #001a33 0%, transparent 50%);
+}
+
+h1 {
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    margin-bottom: 30px;
+    font-size: 2.5em;
+    text-align: center;
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+
+    50% {
+        text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff;
+    }
+}
+
+.container {
+    display: flex;
+    gap: 40px;
+    width: 100%;
+    max-width: 1400px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.section {
+    background: rgba(20, 20, 40, 0.8);
+    border: 2px solid #00ffff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow:
+        0 0 20px rgba(0, 255, 255, 0.5),
+        inset 0 0 20px rgba(0, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.add-ticker-section {
+    flex: 0 1 400px;
+    height: fit-content;
+}
+
+.watchlist-section {
+    flex: 1 1 600px;
+    min-height: 400px;
+}
+
+.alpaca-data-section {
+    flex: 1 1 100%;
+    margin-top: 20px;
+}
+
+h2 {
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #00ffff;
+    border-radius: 8px;
+    color: #00ffff;
+    font-size: 16px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+input[type="text"]::placeholder {
+    color: rgba(0, 255, 255, 0.5);
+}
+
+button {
+    padding: 12px 24px;
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 30px rgba(255, 0, 255, 0.8);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stock-card {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    padding: 15px;
+    position: relative;
+    transition: all 0.3s;
+    animation: slide-in 0.5s ease-out;
+}
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stock-card:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+    transform: scale(1.02);
+}
+
+.stock-symbol {
+    font-size: 1.4em;
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.remove-btn {
+    color: #ff0066;
+    background: none;
+    border: 1px solid #ff0066;
+    padding: 4px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: none;
+}
+
+.remove-btn:hover {
+    background: #ff0066;
+    color: #000;
+    box-shadow: 0 0 15px #ff0066;
+    transform: scale(1.1);
+}
+
+.price-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.price-item {
+    text-align: center;
+}
+
+.price-label {
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.price-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.bid-price {
+    color: #ff3366;
+    text-shadow: 0 0 8px #ff3366;
+}
+
+.ask-price {
+    color: #00ff66;
+    text-shadow: 0 0 8px #00ff66;
+}
+
+.update-time {
+    font-size: 0.7em;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+}
+
+.market-closed {
+    color: #ffaa00;
+    font-weight: bold;
+}
+
+.error {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid #ff0066;
+    color: #ff3366;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none;
+}
+
+.info {
+    background: rgba(0, 255, 255, 0.1);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    color: #00ffff;
+    text-shadow: 0 0 20px #00ffff;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.connection-status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    animation: fade-in 0.5s;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.status-connected {
+    background: rgba(0, 255, 0, 0.2);
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+.status-disconnected {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid #ff0000;
+    color: #ff6666;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.empty-state {
+    text-align: center;
+    color: #666;
+    padding: 40px;
+    font-style: italic;
+}
+
+.market-status {
+    background: rgba(255, 165, 0, 0.1);
+    border: 1px solid #ffa500;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.market-open {
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+.market-closed {
+    color: #ff6666;
+    text-shadow: 0 0 10px #ff6666;
+}
+
+.alpaca-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.alpaca-table th,
+.alpaca-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+.alpaca-table th {
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.alpaca-table tr:hover {
+    background: rgba(0, 255, 255, 0.05);
+}
+
+.last-trade {
+    color: #ffaa00;
+    font-weight: bold;
+}
+
+.trade-flash {
+    animation: trade-flash 0.5s ease-out;
+}
+
+@keyframes trade-flash {
+    0% {
+        background-color: rgba(255, 170, 0, 0.3);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
