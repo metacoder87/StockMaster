@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Stock Details: {{ data.symbol }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 
 <body>
@@ -41,7 +42,6 @@
             <td>Latest Trade Price:</td>
             <td>{{ data.latest_trade_price }}</td>
         </tr>
-        <!-- Add more rows for other data -->
     </table>
     <a href="/all_stocks">Back to List</a> | <a href="/">Back to Homepage</a>
 </body>
