@@ -204,7 +204,7 @@ timeEl.innerHTML = timeText;
 // Add flash effect
 const card = document.getElementById(`stock-${ticker}`);
 if (card) {
-    card.style.boxShadow = '0 0 40px rgba(255, 255, 0, 0.8)';
+    card.style.boxShadow = '0 0 40px rgba(0, 255, 0, 0.5)';
             setTimeout(() => {
     card.style.boxShadow = '';
             }, 300);
