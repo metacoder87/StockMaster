@@ -1,17 +1,23 @@
 import os
 import json
 import pytz
+import base64
 import certifi
 import websocket
 import threading
+import matplotlib
+import pandas as pd
 import yfinance as yf
+from io import BytesIO
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
 import alpaca_trade_api as tradeapi
-from flask import Flask, render_template
 from flask_socketio import SocketIO
 from datetime import datetime, UTC, timedelta
 from alpaca.trading.client import TradingClient
 from alpaca.data import StockHistoricalDataClient
+from flask import Flask, render_template, request
+from alpaca_trade_api.rest import REST as AlpacaREST
 from alpaca.trading.requests import GetAssetsRequest
 from alpaca.trading.enums import AssetClass, AssetStatus
 from flask import Flask, render_template, request, jsonify
@@ -20,6 +26,9 @@ from alpaca.data.requests import StockLatestQuoteRequest, StockLatestTradeReques
 
 # Load environment variables
 load_dotenv()
+
+# Use Agg backend for matplotlib to avoid GUI issues in server environments
+matplotlib.use('Agg')
 
 # Initialize Flask app and SocketIO
 app = Flask(__name__)
@@ -34,6 +43,8 @@ trading_client = TradingClient(
 assets_request = GetAssetsRequest(
     asset_class=AssetClass.US_EQUITY, status=AssetStatus.ACTIVE)
 all_assets = trading_client.get_all_assets(assets_request)
+symbol_to_exchange = {asset.symbol: asset.exchange for asset in all_assets}
+
 
 # Debug template path
 print(f"Template folder: {app.template_folder}")
@@ -60,7 +71,6 @@ alpaca_api = tradeapi.REST(
 WEBSOCKET_URL = 'wss://stream.data.alpaca.markets/v2/delayed_sip'  # Delayed SIP
 
 # Track per-client watchlists (sid -> set of tickers)
-from flask import request
 watchlists = {}
 MAX_TICKERS = 30
 
@@ -404,40 +414,175 @@ def api_assets():
 
 @app.route('/stock/<symbol>')
 def stock_details(symbol):
+    data = {}
+
+    # Fetch from Alpaca (real-time quote, bars, news)
+    quote = alpaca_api.get_latest_quote(symbol)
+    start_date = (datetime.now() - timedelta(days=365)).date().isoformat()
+    bars = alpaca_api.get_bars(symbol, timeframe='1D', start=start_date, limit=365)
+    news = alpaca_api.get_news(symbol, limit=5)  # Recent news
+
+    data['symbol'] = symbol
+    data['exchange'] = symbol_to_exchange.get(symbol, 'N/A')
+    data['current_price'] = quote.ask_price  # Or use last trade, etc.
+    data['bid_price'] = quote.bid_price
+    data['ask_price'] = quote.ask_price
+    latest_bar = alpaca_api.get_latest_bar(symbol)
+    data['volume'] = latest_bar.volume if latest_bar else 'N/A'
+    latest_trade = alpaca_api.get_latest_trade(symbol)
+    data['latest_trade_price'] = latest_trade.price if latest_trade else 'N/A'
+
+    # Convert bars to DataFrame for history
+    history_df = pd.DataFrame([bar._raw for bar in bars])
+    history_df['timestamp'] = pd.to_datetime(history_df['t'])
+
+    # Fetch from yFinance (fundamentals, financials, more info)
+    ticker = yf.Ticker(symbol)
+    info = ticker.info
+    data['name'] = info.get('longName', 'N/A')
+    data['description'] = info.get('longBusinessSummary', 'N/A')
+    data['sector'] = info.get('sector', 'N/A')
+    data['industry'] = info.get('industry', 'N/A')
+    data['website'] = info.get('website', 'N/A')
+    data['market_cap'] = info.get('marketCap', 'N/A')
+    data['pe_ratio'] = info.get('trailingPE', 'N/A')
+    data['fifty_two_week_high'] = info.get('fiftyTwoWeekHigh', 'N/A')
+    data['fifty_two_week_low'] = info.get('fiftyTwoWeekLow', 'N/A')
+    data['dividend_yield'] = info.get('dividendYield', 0) * 100
+    data['eps'] = info.get('trailingEps', 'N/A')
+    data['beta'] = info.get('beta', 'N/A')
+
+    # IPO Date
+    first_trade = info.get('firstTradeDateEpochUtc')
+    data['ipo_date'] = datetime.fromtimestamp(
+        first_trade).strftime('%Y-%m-%d') if first_trade else 'N/A'
+
+    # Financials (simplified key metrics)
+    data['financials'] = {}
     try:
-        # Fetch from yFinance (primary source for details)
-        ticker = yf.Ticker(symbol)
-        # Dict with name, currentPrice, marketCap, peRatio, etc.
-        yf_info = ticker.info
-
-        # Fetch from Alpaca to supplement (asset details, latest quote, latest trade)
-        asset = trading_client.get_asset(symbol)
-        quote_request = StockLatestQuoteRequest(symbol_or_symbols=symbol)
-        latest_quote = data_client.get_stock_latest_quote(
-            quote_request)  # Returns {symbol: Quote}
-        trade_request = StockLatestTradeRequest(symbol_or_symbols=symbol)
-        latest_trade = data_client.get_stock_latest_trade(
-            trade_request)  # Optional, for latest trade details
-
-        # Combine data: Use yF for most, Alpaca for real-time quote/trade if yF missing
-        combined_data = {
-            'symbol': yf_info.get('symbol', asset.symbol),
-            'name': yf_info.get('longName', asset.name),
-            'exchange': yf_info.get('exchange', asset.exchange),
-            # Fallback to Alpaca ask
-            'current_price': yf_info.get('currentPrice', latest_quote[symbol].ask_price),
-            'bid_price': latest_quote[symbol].bid_price,
-            'ask_price': latest_quote[symbol].ask_price,
-            'market_cap': yf_info.get('marketCap'),
-            'pe_ratio': yf_info.get('trailingPE'),
-            'volume': yf_info.get('volume'),
-            'latest_trade_price': latest_trade[symbol].price if latest_trade else None,
-            # Add more as needed, e.g., 'status': asset.status
+        income = ticker.financials.iloc[:, 0]  # Latest year
+        data['financials']['income_statement'] = {
+            'Revenue': income.get('Total Revenue', 'N/A'),
+            'Net Income': income.get('Net Income', 'N/A'),
+            'EBITDA': income.get('EBITDA', 'N/A')
         }
+        balance = ticker.balance_sheet.iloc[:, 0]
+        data['financials']['balance_sheet'] = {
+            'Total Assets': balance.get('Total Assets', 'N/A'),
+            'Total Liabilities': balance.get('Total Liabilities Net Minority Interest', 'N/A'),
+            'Equity': balance.get('Stockholders Equity', 'N/A')
+        }
+        cashflow = ticker.cashflow.iloc[:, 0]
+        data['financials']['cash_flow'] = {
+            'Operating Cash Flow': cashflow.get('Operating Cash Flow', 'N/A'),
+            'Free Cash Flow': cashflow.get('Free Cash Flow', 'N/A')
+        }
+    except:
+        data['financials'] = None
 
-        return render_template('stock_details.html', data=combined_data)
-    except Exception as e:
-        return f"Error fetching details for {symbol}: {str(e)}", 500
+    # News from yFinance (supplement if Alpaca news is limited)
+    yf_news = ticker.news[:5]
+
+
+    data['news'] = []
+    for item in yf_news:
+        # Access the 'title' within the 'content' dictionary
+        title = item.get('content', {}).get('title', 'No Title Available')
+        # Access publisher within content -> provider -> displayName
+        publisher = item.get('content', {}).get(
+            'provider', {}).get('displayName', 'N/A')
+        link = item.get('content', {}).get('canonicalUrl', {}).get(
+            'url', '#')  # Access link within content -> canonicalUrl -> url
+        
+        # Convert ISO 8601 string to datetime object
+        pub_date_str = item.get('content', {}).get('pubDate', '')
+        if pub_date_str:
+            # datetime.fromisoformat handles the 'Z' (UTC) and '+00:00' offsets automatically
+            published_dt = datetime.fromisoformat(
+                pub_date_str.replace('Z', '+00:00'))  # Handles 'Z' for UTC
+            published_at = published_dt.strftime('%Y-%m-%d %H:%M')
+        else:
+            published_at = 'N/A'
+            # Use summary within content and use title as fallback
+        summary = item.get('content', {}).get('summary', title)
+
+        data['news'].append({
+            'title': title,
+            'publisher': publisher,
+            'link': link,
+            'published_at': published_at,
+            'summary': summary
+        })
+
+    # Historical Chart
+    fig, ax = plt.subplots()
+    history_df.plot(x='timestamp', y='c', ax=ax,
+                    title=f'{symbol} 1-Year Price History')
+    ax.set_ylabel('Price')
+    buf = BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    data['history_chart'] = base64.b64encode(buf.read()).decode('utf-8')
+    plt.close(fig)
+
+    # Technical Indicators (using history_df)
+    data['ma_50'] = history_df['c'].rolling(
+        50).mean().iloc[-1] if len(history_df) >= 50 else 'N/A'
+    data['ma_200'] = history_df['c'].rolling(
+        200).mean().iloc[-1] if len(history_df) >= 200 else 'N/A'
+
+    # RSI Calculation (simple 14-day)
+    delta = history_df['c'].diff()
+    gain = (delta.where(delta > 0, 0)).rolling(14).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(14).mean()
+    rs = gain / loss
+    data['rsi'] = 100 - (100 / (1 + rs.iloc[-1])
+                         ) if len(history_df) >= 14 else 'N/A'
+
+    # Intrinsic Value Calculation (Simple Graham Formula: Intrinsic = EPS * (8.5 + 2*growth) * 4.4 / yield)
+    # Assume growth rate from yf (forwardEps or historical)
+    growth_rate = info.get('earningsGrowth', 0.05) * 100  # Default 5%
+    bond_yield = 4.4  # Approximate US Treasury yield; fetch dynamically if needed
+    if data['eps'] != 'N/A' and data['eps'] > 0:
+        intrinsic = (data['eps'] * (8.5 + 2 * growth_rate) * 4.4) / bond_yield
+        data['intrinsic_value'] = round(intrinsic, 2)
+    else:
+        data['intrinsic_value'] = 'N/A'
+
+    # Price Difference and Recommendation
+    if data['intrinsic_value'] != 'N/A':
+        data['price_difference'] = round(
+            data['intrinsic_value'] - data['current_price'], 2)
+        data['percentage_difference'] = round(
+            (data['price_difference'] / data['current_price']) * 100, 2)
+        if data['percentage_difference'] > 20:
+            data['recommendation'] = 'buy'
+        elif data['percentage_difference'] < -20:
+            data['recommendation'] = 'sell'
+        else:
+            data['recommendation'] = 'hold'
+    else:
+        data['price_difference'] = 'N/A'
+        data['percentage_difference'] = 'N/A'
+        data['recommendation'] = 'hold'
+
+    # Analysis Chart (Intrinsic vs Historical Price)
+    if data['intrinsic_value'] != 'N/A':
+        fig, ax = plt.subplots()
+        history_df.plot(x='timestamp', y='c', ax=ax, label='Price')
+        ax.axhline(data['intrinsic_value'], color='r',
+                   linestyle='--', label='Intrinsic Value')
+        ax.legend()
+        ax.set_title(f'{symbol} Price vs Intrinsic Value')
+        buf = BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        data['analysis_chart'] = base64.b64encode(buf.read()).decode('utf-8')
+        plt.close(fig)
+    else:
+        data['analysis_chart'] = None
+
+    return render_template('stock_details.html', data=data)
 
 @socketio.on('connect', namespace='/ws/watchlist')
 def handle_connect():

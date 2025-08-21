@@ -5,44 +5,305 @@
     <meta charset="UTF-8">
     <title>Stock Details: {{ data.symbol }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <style>
+        /* Additional styles to enhance dark neon theme */
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #00ff00;
+            /* Neon green */
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #333;
+            text-align: left;
+        }
+
+        th {
+            background-color: #1f1f1f;
+            color: #00ffff;
+            /* Neon cyan */
+        }
+
+        .positive {
+            color: #00ff00;
+            /* Green for positive */
+        }
+
+        .negative {
+            color: #ff0000;
+            /* Red for negative */
+        }
+
+        .recommendation {
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .buy {
+            background-color: #002200;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .sell {
+            background-color: #220000;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+        }
+
+        .hold {
+            background-color: #222200;
+            border: 1px solid #ffff00;
+            color: #ffff00;
+        }
+
+        img.chart {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            border: 1px solid #333;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        ul.news {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul.news li {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #1f1f1f;
+            border-radius: 5px;
+        }
+
+        ul.news li a {
+            color: #00ffff;
+            text-decoration: none;
+        }
+
+        ul.news li a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
     <h1>{{ data.symbol }} - {{ data.name }}</h1>
+
+    <!-- Section: Company Information -->
+    <h2>Company Information</h2>
     <table>
         <tr>
-            <td>Exchange:</td>
+            <th>Description</th>
+            <td>{{ data.description }}</td>
+        </tr>
+        <tr>
+            <th>Sector</th>
+            <td>{{ data.sector }}</td>
+        </tr>
+        <tr>
+            <th>Industry</th>
+            <td>{{ data.industry }}</td>
+        </tr>
+        <tr>
+            <th>IPO Date</th>
+            <td>{{ data.ipo_date }}</td>
+        </tr>
+        <tr>
+            <th>Website</th>
+            <td><a href="{{ data.website }}" target="_blank">{{ data.website }}</a></td>
+        </tr>
+    </table>
+
+    <!-- Section: Current Quote -->
+    <h2>Current Quote</h2>
+    <table>
+        <tr>
+            <th>Exchange</th>
             <td>{{ data.exchange }}</td>
         </tr>
         <tr>
-            <td>Current Price:</td>
+            <th>Current Price</th>
             <td>{{ data.current_price }}</td>
         </tr>
         <tr>
-            <td>Bid Price:</td>
+            <th>Bid Price</th>
             <td>{{ data.bid_price }}</td>
         </tr>
         <tr>
-            <td>Ask Price:</td>
+            <th>Ask Price</th>
             <td>{{ data.ask_price }}</td>
         </tr>
         <tr>
-            <td>Market Cap:</td>
+            <th>Market Cap</th>
             <td>{{ data.market_cap }}</td>
         </tr>
         <tr>
-            <td>P/E Ratio:</td>
+            <th>P/E Ratio</th>
             <td>{{ data.pe_ratio }}</td>
         </tr>
         <tr>
-            <td>Volume:</td>
+            <th>Volume</th>
             <td>{{ data.volume }}</td>
         </tr>
         <tr>
-            <td>Latest Trade Price:</td>
+            <th>Latest Trade Price</th>
             <td>{{ data.latest_trade_price }}</td>
         </tr>
+        <tr>
+            <th>52-Week High</th>
+            <td>{{ data.fifty_two_week_high }}</td>
+        </tr>
+        <tr>
+            <th>52-Week Low</th>
+            <td>{{ data.fifty_two_week_low }}</td>
+        </tr>
+        <tr>
+            <th>Dividend Yield</th>
+            <td>{{ data.dividend_yield }}%</td>
+        </tr>
+        <tr>
+            <th>Earnings Per Share (EPS)</th>
+            <td>{{ data.eps }}</td>
+        </tr>
+        <tr>
+            <th>Beta</th>
+            <td>{{ data.beta }}</td>
+        </tr>
     </table>
+
+    <!-- Section: Financials -->
+    <h2>Key Financials</h2>
+    {% if data.financials %}
+    <h3>Income Statement (Latest Year)</h3>
+    <table>
+        {% for key, value in data.financials.income_statement.items() %}
+        <tr>
+            <th>{{ key }}</th>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Balance Sheet (Latest)</h3>
+    <table>
+        {% for key, value in data.financials.balance_sheet.items() %}
+        <tr>
+            <th>{{ key }}</th>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Cash Flow (Latest Year)</h3>
+    <table>
+        {% for key, value in data.financials.cash_flow.items() %}
+        <tr>
+            <th>{{ key }}</th>
+            <td>{{ value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No financial data available.</p>
+    {% endif %}
+
+    <!-- Section: Historical Chart -->
+    <h2>Historical Price Chart (1 Year)</h2>
+    {% if data.history_chart %}
+    <img src="data:image/png;base64,{{ data.history_chart }}" alt="Historical Price Chart" class="chart">
+    {% else %}
+    <p>Chart not available.</p>
+    {% endif %}
+
+    <!-- Section: News Highlights -->
+    <h2>Recent News</h2>
+    {% if data.news %}
+    <ul class="news">
+        {% for item in data.news %}
+        <li>
+            <a href="{{ item.link }}" target="_blank">{{ item.title }}</a><br>
+            <small>{{ item.publisher }} - {{ item.published_at }}</small><br>
+            {{ item.summary }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No recent news available.</p>
+    {% endif %}
+
+    <!-- Section: Analysis and Recommendation -->
+    <h2>Stock Analysis</h2>
+    <table>
+        <tr>
+            <th>Current Price</th>
+            <td>{{ data.current_price }}</td>
+        </tr>
+        <tr>
+            <th>Estimated Intrinsic Value (Graham Formula)</th>
+            <td>{{ data.intrinsic_value }}</td>
+        </tr>
+        <tr>
+            <th>Price Difference</th>
+            <td class="{% if data.price_difference > 0 %}positive{% else %}negative{% endif %}">{{ data.price_difference
+                }} ({{ data.percentage_difference }}%)</td>
+        </tr>
+    </table>
+    <div class="recommendation {{ data.recommendation.lower() }}">
+        Recommendation: {{ data.recommendation.upper() }}
+        {% if data.recommendation == 'buy' %}
+        - The stock appears undervalued.
+        {% elif data.recommendation == 'sell' %}
+        - The stock appears overvalued.
+        {% else %}
+        - The stock is fairly valued.
+        {% endif %}
+    </div>
+
+    <h3>Intrinsic Value vs. Price Chart</h3>
+    {% if data.analysis_chart %}
+    <img src="data:image/png;base64,{{ data.analysis_chart }}" alt="Intrinsic Value Chart" class="chart">
+    {% else %}
+    <p>Analysis chart not available.</p>
+    {% endif %}
+
+    <!-- Additional Analysis: Technical Indicators -->
+    <h2>Technical Indicators</h2>
+    <table>
+        <tr>
+            <th>50-Day Moving Average</th>
+            <td>{{ data.ma_50 }}</td>
+        </tr>
+        <tr>
+            <th>200-Day Moving Average</th>
+            <td>{{ data.ma_200 }}</td>
+        </tr>
+        <tr>
+            <th>RSI (14-Day)</th>
+            <td>{{ data.rsi }} {% if data.rsi < 30 %}(Oversold){% elif data.rsi> 70 %}(Overbought){% endif %}</td>
+        </tr>
+    </table>
+
     <a href="/all_stocks">Back to List</a> | <a href="/">Back to Homepage</a>
 </body>
 
