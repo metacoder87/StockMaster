@@ -29,6 +29,7 @@ load_dotenv()
 
 # Use Agg backend for matplotlib to avoid GUI issues in server environments
 matplotlib.use('Agg')
+plt.style.use("dark_background")
 
 # Initialize Flask app and SocketIO
 app = Flask(__name__)
@@ -435,6 +436,8 @@ def stock_details(symbol):
     # Convert bars to DataFrame for history
     history_df = pd.DataFrame([bar._raw for bar in bars])
     history_df['timestamp'] = pd.to_datetime(history_df['t'])
+    data['history_closes'] = [float(round(c, 2))
+                              for c in history_df['c'].dropna().tolist()]
 
     # Fetch from yFinance (fundamentals, financials, more info)
     ticker = yf.Ticker(symbol)
@@ -553,14 +556,21 @@ def stock_details(symbol):
     if data['intrinsic_value'] != 'N/A':
         data['price_difference'] = round(
             data['intrinsic_value'] - data['current_price'], 2)
-        data['percentage_difference'] = round(
-            (data['price_difference'] / data['current_price']) * 100, 2)
-        if data['percentage_difference'] > 20:
-            data['recommendation'] = 'buy'
-        elif data['percentage_difference'] < -20:
-            data['recommendation'] = 'sell'
+
+        if data['current_price'] != 0:
+            data['percentage_difference'] = round(
+                (data['price_difference'] / data['current_price']) * 100, 2)
+
+            if data['percentage_difference'] > 20:
+                data['recommendation'] = 'buy'
+            elif data['percentage_difference'] < -20:  
+                data['recommendation'] = 'sell'
+            else:
+                data['recommendation'] = 'hold'
         else:
-            data['recommendation'] = 'hold'
+            # Handle the case where current_price is 0
+            data['percentage_difference'] = 'N/A'
+            data['recommendation'] = 'hold'  
     else:
         data['price_difference'] = 'N/A'
         data['percentage_difference'] = 'N/A'
