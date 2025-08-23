@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Stock Details: {{ data.symbol }}</title>
+    <title>{{ data.symbol }} Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
     <style>
         /* Additional styles to enhance dark neon theme */
@@ -25,6 +25,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            margin-right: 20%;
+            margin-left: 20%;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #1f1f1f;
+            /* Darker background for tables */
         }
 
         th,
@@ -32,6 +39,7 @@
             padding: 10px;
             border: 1px solid #333;
             text-align: left;
+            background-color: #121212;
         }
 
         th {
@@ -82,6 +90,7 @@
             margin: 20px 0;
             border: 1px solid #333;
             box-shadow: 0 0 10px #00ff00;
+            border-radius: 10px;
         }
 
         ul.news {
@@ -104,10 +113,21 @@
         ul.news li a:hover {
             text-decoration: underline;
         }
+
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* ensures it's behind the page content */
+            background: black;
+        }
     </style>
 </head>
 
 <body>
+    <canvas id="matrixCanvas" aria-hidden="true"></canvas>
     <h1>{{ data.symbol }} - {{ data.name }}</h1>
 
     <!-- Section: Company Information -->
@@ -265,8 +285,8 @@
         </tr>
         <tr>
             <th>Price Difference</th>
-            <td class="{% if data.price_difference > 0 %}positive{% else %}negative{% endif %}">{{ data.price_difference
-                }} ({{ data.percentage_difference }}%)</td>
+            <td class="{% if data.price_difference|int > 0 %}positive{% else %}negative{% endif %}">{{ data.price_difference }} ({{
+                data.percentage_difference }}%)</td>
         </tr>
     </table>
     <div class="recommendation {{ data.recommendation.lower() }}">
@@ -307,4 +327,78 @@
     <a href="/all_stocks">Back to List</a> | <a href="/">Back to Homepage</a>
 </body>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const canvas = document.getElementById("matrixCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Resize canvas to full window
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Matrix settings
+        const fontSize = 16;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(0); // drop positions
+
+        // Container for numbers (historic + live)
+        let numberStream = [];
+
+        // Load historic data from template context (passed in Flask)
+        {% if historical_data %}
+        numberStream = [
+            {% for d in historical_data %}
+                "{{ d['Close'] }}"{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ];
+        {% else %}
+        numberStream = [];
+        {% endif %}
+
+        // Drawing the rain
+        function draw() {
+            // fade effect
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "#0F0"; // neon green
+            ctx.font = fontSize + "px monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+                // pick a number from stream or random fallback
+                const text =
+                    numberStream[Math.floor(Math.random() * numberStream.length)] || Math.floor(Math.random() * 1000);
+
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // reset drop randomly after it falls off screen
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                drops[i]++;
+            }
+        }
+
+        setInterval(draw, 50);
+
+        // Handle window resize
+        window.addEventListener("resize", () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Socket.IO for live updates
+        var socket = io();
+        socket.on("price_update", function (data) {
+            // Push latest price into stream
+            if (data && data.price) {
+                numberStream.push(data.price);
+                if (numberStream.length > 500) {
+                    numberStream.shift(); // keep it lean
+                }
+            }
+        });
+    });
+</script>
 </html>
