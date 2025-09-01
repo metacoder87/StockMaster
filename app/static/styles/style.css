@@ -13,10 +13,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
     background-image:
         radial-gradient(ellipse at top, #1a0033 0%, transparent 50%),
         radial-gradient(ellipse at bottom, #001a33 0%, transparent 50%);
+}
+
+a {
+    color: #00ffff;
+    text-decoration: none;
 }
 
 h1 {
@@ -26,6 +30,13 @@ h1 {
     font-size: 2.5em;
     text-align: center;
     animation: pulse-glow 2s ease-in-out infinite;
+}
+
+h2, h3 {
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+    margin-bottom: 20px;
+    font-size: 1.5em;
 }
 
 @keyframes pulse-glow {
@@ -42,11 +53,11 @@ h1 {
 
 .container {
     display: flex;
-    gap: 40px;
+    gap: 20px;
     width: 100%;
-    max-width: 1400px;
     flex-wrap: wrap;
     justify-content: center;
+    margin-bottom: 20px;
 }
 
 .section {
@@ -62,7 +73,6 @@ h1 {
 
 .add-ticker-section {
     flex: 0 1 400px;
-    height: fit-content;
 }
 
 .watchlist-section {
@@ -72,14 +82,6 @@ h1 {
 
 .alpaca-data-section {
     flex: 1 1 100%;
-    margin-top: 20px;
-}
-
-h2 {
-    color: #ff00ff;
-    text-shadow: 0 0 10px #ff00ff;
-    margin-bottom: 20px;
-    font-size: 1.5em;
 }
 
 .input-group {
@@ -351,8 +353,23 @@ button:active {
 
 .alpaca-table {
     width: 100%;
-    border-collapse: collapse;
     margin-top: 20px;
+}
+
+.alpaca-table tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+.alpaca-table tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+.alpaca-table tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+.alpaca-table tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
 }
 
 .alpaca-table th,
@@ -389,5 +406,372 @@ button:active {
 
     100% {
         background-color: transparent;
+    }
+}
+
+#stocksTable_wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+#stocksTable_wrapper table {
+    width: 100%;
+}
+
+#stocksTable_wrapper th,
+#stocksTable_wrapper td {
+    padding: 12px;
+    text-align: left;
+}
+
+#stocksTable_wrapper a {
+    color: #00ffff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+#stocksTable_wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+#stocksTable_wrapper::-webkit-scrollbar-thumb {
+    background: #00ffff;
+    border-radius: 4px;
+}
+
+#stocksTable_wrapper::-webkit-scrollbar-thumb:hover {
+    background: #00cccc;
+}
+
+#stocksTable tr:first-child th:first-child {
+    border-top-left-radius: 10px;
+}
+
+#stocksTable tr:first-child th:last-child {
+    border-top-right-radius: 10px;
+}
+
+#stocksTable tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+
+#stocksTable tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+.dataTables_filter input {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #00ffff;
+    border-radius: 8px;
+    color: #00ffff;
+    padding: 8px;
+    transition: all 0.3s;
+}
+
+.dataTables_filter input:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.dataTables_filter input::placeholder {
+    color: rgba(0, 255, 255, 0.5);
+}
+
+.dataTables_length {
+    margin-bottom: 4px;
+}
+
+.dataTables_length select {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #00ffff;
+    border-radius: 8px;
+    color: #00ffff;
+    padding: 8px;
+    transition: all 0.3s;
+}
+
+.dataTables_length select:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.dataTables_length select option {
+    background: #0a0a0a;
+    color: #00ffff;
+}
+
+.quote-table {
+    width: 100%;
+    margin-bottom: 20px;
+    margin-right: 20%;
+    margin-left: 20%;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    overflow: hidden;
+    /* Darker background for tables */
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #333;
+    text-align: left;
+    background-color: #121212;
+}
+
+th {
+    background-color: #1f1f1f;
+    color: #00ffff;
+    /* Neon cyan */
+}
+
+.positive {
+    color: #00ff00;
+    /* Green for positive */
+}
+
+.negative {
+    color: #ff0000;
+    /* Red for negative */
+}
+
+.recommendation {
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.buy {
+    background-color: #002200;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+}
+
+.sell {
+    background-color: #220000;
+    border: 1px solid #ff0000;
+    color: #ff0000;
+}
+
+.hold {
+    background-color: #222200;
+    border: 1px solid #ffff00;
+    color: #ffff00;
+}
+
+img.chart {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px 0;
+    border: 1px solid #333;
+    box-shadow: 0 0 10px #00ff00;
+    border-radius: 10px;
+}
+
+ul.news {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul.news li {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #1f1f1f;
+    border-radius: 5px;
+}
+
+ul.news li a {
+    color: #00ffff;
+    text-decoration: none;
+}
+
+ul.news li a:hover {
+    text-decoration: underline;
+}
+
+#matrixCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    /* ensures it's behind the page content */
+    background: black;
+}
+
+/* Footer Styles - Dark Neon Theme */
+.footer {
+    width: 100%;
+    background: rgba(10, 10, 10, 0.9);
+    /* Semi-transparent dark background */
+    border-top: 2px solid #00ffff;
+    /* Neon cyan border */
+    padding: 40px 20px;
+    margin-top: 20px;
+    box-shadow: 0 -5px 20px rgba(0, 255, 255, 0.3);
+    /* Glowing shadow upwards */
+    backdrop-filter: blur(5px);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    border-radius: -10px;
+    /* Ensures enough space for content + design-tag */
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 90%;
+    margin: 0 auto;
+    gap: 30px;
+    flex-grow: 1;
+}
+
+.quick-links {
+    text-align: left;
+    /* Aligns Quick Links to the left */
+}
+
+.social {
+    text-align: right;
+    /* Aligns Social Links to the right */
+}
+
+.quick-links h3,
+.social h3 {
+    color: #ff00ff;
+    /* Neon pink for headers */
+    text-shadow: 0 0 10px #ff00ff;
+    margin-bottom: 15px;
+}
+
+.quick-links ul,
+.social ul {
+    list-style: none;
+    padding: 0;
+    /* Removes default padding */
+}
+
+.quick-links ul li {
+    margin-bottom: 10px;
+}
+
+.quick-links ul li a {
+    color: #e0e0e0;
+    transition: all 0.3s;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+}
+
+.quick-links ul li a:hover {
+    color: #00ffff;
+    /* Glow on hover */
+    text-shadow: 0 0 15px #00ffff;
+    transform: translateX(5px);
+    /* Slight slide animation */
+}
+
+.social ul {
+    display: flex;
+    justify-content: flex-end;
+    /* Aligns social icons to the right */
+    gap: 20px;
+}
+
+.social ul li a {
+    font-size: 1.5em;
+    color: #00ffff;
+    /* Neon cyan icons */
+    transition: all 0.3s;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.social ul li a:hover {
+    color: #ff00ff;
+    /* Change to pink on hover */
+    text-shadow: 0 0 20px #ff00ff;
+    transform: scale(1.2);
+    /* Slight zoom animation */
+}
+
+/* Design Tag Styles */
+#design-tag {
+    padding: 10px;
+    margin-top: auto;
+    /* Pushes it to the bottom */
+    transition: 0.4s;
+    text-align: center;
+    /* Centers the content */
+}
+
+#design-tag p {
+    margin: 0;
+    /* Removes default margin */
+}
+
+#design-tag a {
+    font-size: 10px;
+    text-decoration: none;
+    color: #e0e0e0;
+    transition: 0.4s;
+    display: inline-flex;
+    /* Keeps text and image inline */
+    align-items: center;
+    justify-content: center;
+}
+
+#design-tag a:hover,
+#design-tag img:hover {
+    color: #fe53bb;
+    /* Neon pink on hover */
+    font-size: 12px;
+}
+
+#design-tag img {
+    width: 25px;
+    height: 25px;
+    margin-left: 5px;
+    /* Space between text and image */
+    transition: 0.4s;
+}
+
+#design-tag a:hover img {
+    width: 30px;
+    height: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .quick-links {
+        text-align: center;
+        /* Center on mobile */
+    }
+
+    .social ul {
+        justify-content: center;
+        /* Center social icons on mobile */
+        gap: 15px;
+    }
+
+    #design-tag {
+        margin-top: 20px;
+        /* Extra space on mobile */
     }
 }
