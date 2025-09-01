@@ -5,125 +5,8 @@
     <meta charset="UTF-8">
     <title>{{ data.symbol }} Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
-    <style>
-        /* Additional styles to enhance dark neon theme */
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Arial', sans-serif;
-        }
-
-        h1,
-        h2,
-        h3 {
-            color: #00ff00;
-            /* Neon green */
-            text-shadow: 0 0 5px #00ff00;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            margin-right: 20%;
-            margin-left: 20%;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-            border-radius: 10px;
-            overflow: hidden;
-            background-color: #1f1f1f;
-            /* Darker background for tables */
-        }
-
-        th,
-        td {
-            padding: 10px;
-            border: 1px solid #333;
-            text-align: left;
-            background-color: #121212;
-        }
-
-        th {
-            background-color: #1f1f1f;
-            color: #00ffff;
-            /* Neon cyan */
-        }
-
-        .positive {
-            color: #00ff00;
-            /* Green for positive */
-        }
-
-        .negative {
-            color: #ff0000;
-            /* Red for negative */
-        }
-
-        .recommendation {
-            font-weight: bold;
-            font-size: 1.2em;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-
-        .buy {
-            background-color: #002200;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-        }
-
-        .sell {
-            background-color: #220000;
-            border: 1px solid #ff0000;
-            color: #ff0000;
-        }
-
-        .hold {
-            background-color: #222200;
-            border: 1px solid #ffff00;
-            color: #ffff00;
-        }
-
-        img.chart {
-            width: 100%;
-            max-width: 800px;
-            margin: 20px 0;
-            border: 1px solid #333;
-            box-shadow: 0 0 10px #00ff00;
-            border-radius: 10px;
-        }
-
-        ul.news {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        ul.news li {
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #1f1f1f;
-            border-radius: 5px;
-        }
-
-        ul.news li a {
-            color: #00ffff;
-            text-decoration: none;
-        }
-
-        ul.news li a:hover {
-            text-decoration: underline;
-        }
-
-        #matrixCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1; /* ensures it's behind the page content */
-            background: black;
-        }
-    </style>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 </head>
 
 <body>
@@ -157,7 +40,7 @@
 
     <!-- Section: Current Quote -->
     <h2>Current Quote</h2>
-    <table>
+    <table class="quote-table">
         <tr>
             <th>Exchange</th>
             <td>{{ data.exchange }}</td>
@@ -323,8 +206,43 @@
             <td>{{ data.rsi }} {% if data.rsi < 30 %}(Oversold){% elif data.rsi> 70 %}(Overbought){% endif %}</td>
         </tr>
     </table>
+<footer class="footer">
+    <div class="footer-container">
+        <div class="quick-links">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/all_stocks">Stocks</a></li>
+            </ul>
+        </div>
+        <div class="social">
+            <h3>Follow us on</h3>
+            <ul>
+                <li>
+                    <a href="https://github.com/metacoder87">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://stackoverflow.com/users/8031257/metag">
+                        <i class="fab fa-stack-overflow"></i>
+                    </a>
+                </li>
+                <li><a href="https://www.linkedin.com/company/g-m-cubed">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="design-tag">
+        <p>Designed & Developed by</p>
+        <a href="https://gmcubedesigns.com" target="_blank">
+            <img src="{{ url_for('static', filename='images/gm_cubed_neon.png') }}" alt="GM Cubed Designs Logo">
+        </a>
 
-    <a href="/all_stocks">Back to List</a> | <a href="/">Back to Homepage</a>
+    </div>
+</footer>
 </body>
 
 <script>

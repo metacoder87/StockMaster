@@ -5,6 +5,8 @@
     <title>Neon Ticker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.min.js"></script>
@@ -90,6 +92,43 @@
                 <button onclick="window.location.href='/all_stocks'">View Full Page List</button>
             </section>
         </div>
+<footer class="footer">
+    <div class="footer-container">
+        <div class="quick-links">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/all_stocks">Stocks</a></li>
+            </ul>
+        </div>
+        <div class="social">
+            <h3>Follow us on</h3>
+            <ul>
+                <li>
+                    <a href="https://github.com/metacoder87">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://stackoverflow.com/users/8031257/metag">
+                        <i class="fab fa-stack-overflow"></i>
+                    </a>
+                </li>
+                <li><a href="https://www.linkedin.com/company/g-m-cubed">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="design-tag">
+        <p>Designed & Developed by</p>
+            <a href="https://gmcubedesigns.com" target="_blank">
+                <img src="{{ url_for('static', filename='images/gm_cubed_neon.png') }}" alt="GM Cubed Designs Logo">
+            </a>
+        
+    </div>
+</footer>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
