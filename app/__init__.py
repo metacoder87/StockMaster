@@ -1,1 +1,0 @@
-from .app import app, socketio, WEBSOCKET_URL
