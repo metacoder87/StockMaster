@@ -3,11 +3,13 @@ from dotenv import load_dotenv
 from datetime import datetime, UTC
 from flask import Flask, render_template, request, jsonify, make_response
 from flask_socketio import SocketIO
+from flask_login import login_required
 
 # New imports from the new modules
 from .data import fetchers
 from .sockets import handlers as socket_handlers
 from . import analysis
+from .auth import auth_bp, login_manager
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +19,12 @@ app.config['SECRET_KEY'] = os.urandom(24).hex()
 socketio = SocketIO(app, cors_allowed_origins="*",
                     async_mode='threading', engineio_logger=True)
 
+# Initialize Flask-Login
+login_manager.init_app(app)
+
+# Register Blueprints
+app.register_blueprint(auth_bp)
+
 # Register the socket handlers
 socket_handlers.register_socket_handlers(socketio, fetchers)
 
@@ -24,6 +32,7 @@ socket_handlers.register_socket_handlers(socketio, fetchers)
 
 
 @app.route('/')
+@login_required
 def index():
     """Render the main application page."""
     print(f"Rendering index.html at {datetime.now(UTC).isoformat()}")
@@ -31,11 +40,13 @@ def index():
 
 
 @app.route('/all_stocks')
+@login_required
 def all_stocks():
     return render_template('all_stocks.html')
 
 
 @app.route('/api/assets')
+@login_required
 def api_assets():
     try:
         # Validate and parse query parameters
@@ -83,6 +94,7 @@ def api_assets():
 
 
 @app.route('/stock/<symbol>')
+@login_required
 def stock_details(symbol):
     data = fetchers.get_stock_details(symbol)
     if not data:

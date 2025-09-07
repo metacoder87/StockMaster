@@ -10,6 +10,18 @@
 </head>
 
 <body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="#">{{ current_user.username }}</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
     <canvas id="matrixCanvas" aria-hidden="true"></canvas>
     <h1>{{ data.symbol }} - {{ data.name }}</h1>
 
