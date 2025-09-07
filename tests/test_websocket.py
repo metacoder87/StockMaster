@@ -19,7 +19,7 @@ def socketio_client():
 def test_index_route(client):
     response = client.get('/')
     assert response.status_code == 200
-    assert b'Real-Time Stock Watchlist' in response.data
+    assert b'Real-Time Stock Info' in response.data
 
 
 def test_socketio_connect(socketio_client):
