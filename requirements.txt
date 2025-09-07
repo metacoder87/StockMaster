@@ -5,6 +5,7 @@ alpaca-py
 python-dotenv
 requests
 eventlet
+matplotlib
 flask-socketio
 websocket-client
 pytest-asyncio
